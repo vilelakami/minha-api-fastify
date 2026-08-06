@@ -4,17 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx --watch server.ts"
+    "dev": "tsx --watch server.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "fastify": "^5.11.2"
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.11.2",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.23.5",
     "typescript": "^7.0.2"
   }
