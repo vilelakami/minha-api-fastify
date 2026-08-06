@@ -12,6 +12,8 @@
       "ESNext.Iterator",
       "ESNext.Promise"
     ],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "module": "nodenext",
     "target": "es2024",
 

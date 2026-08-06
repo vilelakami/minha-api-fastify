@@ -1,66 +1,20 @@
-import fastify from 'fastify'; //importando com typescript
-import crypto from 'node:crypto';
+import fastify from 'fastify'; // importando o fastify
+import { serializerCompiler, validatorCompiler, ZodTypeProvider } from '@fastify/type-provider-zod'; // importando o zod
+import { getCoursesRoute } from './src/routes/get-courses.ts'; // importando a rota de listar cursos
+import { getCourseByIdRoute } from './src/routes/get-course-by-id.ts'; // importando a rota de listar curso por id
+import { createCourseRoute } from './src/routes/create-course.ts'; // importando a rota de criar curso
 
-const server = fastify();
+// criando o servidor
+const server = fastify().withTypeProvider<ZodTypeProvider>(); // avisa o TypeScript "essa instância do Fastify usa Zod pra tipar rotas".
 
-// preciso tipar o array de cursos
-type Courses = {
-    id: string,
-    title: string
-}
+server.setSerializerCompiler(serializerCompiler); // essa é a parte que faltava. Diz ao Fastify, em runtime: "quando for validar body/params/querystring, use esse compilador que sabe converter Zod → JSON Schema antes de mandar pro ajv"
+server.setValidatorCompiler(validatorCompiler); // mesma coisa mas pro response (quando fomos fazer o openapi)
 
-// lista de courses herdando a tipagem
-const courses: Courses[] = [
-    {id: '1', title: "Curso de Node.js"},
-    {id: '2', title: "Curso de React.js"},
-    {id: '3', title: "Curso de React Native"}
-]
-
-// verificando se o curso existe e retornando
-server.get('/courses/:id', (req, res) => {
-    // o tipo do meu params é um objeto que tem a propriedade id do tipo string
-    type Params = {
-        id: string
-    }
-
-    // pegando o id do curso
-    const params = req.params as Params;
-    const course = courses.find(c => c.id === params.id);
-
-    // se o curso existir, retorno o curso
-    if(course) {
-        return {course};
-    }
-
-    // se o curso nao existir, retorno o status code 404
-    return res.status(404).send();
-})
-
-// exemplo com post e req body
-server.post('/courses', (req, res) => {
-    // tipo o body
-    type Body = {
-        id: string,
-        title: string
-    }
-
-    // gerando um id randomico
-    const courseId = crypto.randomUUID();
-    // pegando o title
-    const body = req.body as Body;
-    const courseTitle = body.title;
-
-    // se o title for vazio, retorno o status code 400
-    if(!courseTitle) {
-        return res.status(400).send({error: 'Title is required'});
-    }
-    
-    // se o title for preenchido, adiciono o curso no array
-    courses.push({id: courseId, title: courseTitle});
-
-    // retorno o status code 201 e o id do curso criado
-    return res.status(201).send({id: courseId});
-})
+// registrando a rota
+// também passamos o server como parâmetro pras nossas rotas
+server.register(getCoursesRoute);   
+server.register(getCourseByIdRoute);
+server.register(createCourseRoute);
 
 server.listen({port:3000}).then(() => {
     console.log('Server is running on port 3000');
