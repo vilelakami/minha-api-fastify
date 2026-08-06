@@ -7,9 +7,16 @@ import { eq } from 'drizzle-orm'; // importando o operador lógico equals
 export const getCourseByIdRoute: FastifyPluginAsyncZod = async (server) => {
     server.get('/courses/:id', {
         schema: {
+            tags: ['courses'],
+            summary:'Get a course by id',
+            description: "Essa rota busca um curso pelo id específico.",
             params: z.object({
                         id: z.uuid(),
-                    })
+                    }),
+                    response: {
+                        200: z.object({course: z.object({ id: z.string(), title: z.string() })}).describe("Curso encontrado com sucesso!"),
+                        404: z.object({message: z.string()}).describe("Curso não encontrado!"),
+                    }
             }}, 
             async (req, res) => {
                 const courseId = req.params.id;
@@ -17,6 +24,6 @@ export const getCourseByIdRoute: FastifyPluginAsyncZod = async (server) => {
                 if(result.length > 0) {
                     return { course: result[0]};
                 }
-                return res.status(404).send();
+                return res.status(404).send({message: "Curso não encontrado"});
             } 
 )}
